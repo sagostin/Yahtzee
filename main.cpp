@@ -23,7 +23,7 @@ int turn = 0;
 
 //https://considerable.com/yahtzee/
 
-void rollAndHold(){
+void rll(){
 
     random_device rd;
     mt19937 gen(rd());
@@ -39,45 +39,103 @@ void rollAndHold(){
     cout<<"\n";
 
     roll++;
+}
 
+void hold(){
+    int answer;
 
     cout<<"Is there dice that you would like to hold? [1=yes, 2=no]";
     cin>>answer;
 
     if( answer == 1 )
     {
-        for( int k=0; k<5; k++ )
-        {
-            cout << "Would you like to keep dice #" << k+1 << "(" << dice[k] << ")? " << endl;
-            cout << " Press '1' for yes or '2' for no: " << endl;
-            cin >> answer;
 
-            if( answer == 1 )
-            {
-                heldDice[held] = dice[k];
-                held++;
-            }
+            for (int k = 0; k < 5; k++) {
+                if (dice[k] != 0) {
+                    cout << "Would you like to keep dice #" << k + 1 << "(" << dice[k] << ")? " << endl;
+                    cout << " Press '1' for yes or '2' for no: " << endl;
+                    cin >> answer;
+
+                    if (answer == 1) {
+                        heldDice[held] = dice[k];
+                        held++;
+                    }
+                }
         }
     }
 }
 
-void score(){
-    int answer;
-    cout<<"\n1) 1s: "<<scoreCard[0]<<"\n2) 2s: "<<scoreCard[1]<<"\n3) 3s: "<<scoreCard[2]<<"\n4) 4s: "<<scoreCard[3]<<"\n5) 5s: "<<scoreCard[4]<<"\n6) 6s: "<<scoreCard[5]<<"\n7) 3-of-a-kind: "<<scoreCard[6]<<"\n8) 4-of-a-kind: "<<scoreCard[7]<<"\n9) full house: "<<scoreCard[8]<<"\n10) small straight: "<<scoreCard[9]<<"\n11) large straight: "<<scoreCard[10]<<"\n12) extra: "<<scoreCard[11]<<"\n13) YAHTZEE: "<<scoreCard[12]<<"\n";
-    cout<<"\n\nChoose where to apply your points: ";
-    cin>>answer;
-    int points;
+bool calculateScore(int scoreCardSlot){
+    int diceNum = scoreCardSlot + 1;
+    bool success = false;
+    if(scoreCardSlot < 6) {
 
-    while(scoreCard[answer-1] != -1){
-        cout<<"You have already set your score for that slot.";
-        cout<<"\n1) 1s: "<<scoreCard[0]<<"\n2) 2s: "<<scoreCard[1]<<"\n3) 3s: "<<scoreCard[2]<<"\n4) 4s: "<<scoreCard[3]<<"\n5) 5s: "<<scoreCard[4]<<"\n6) 6s: "<<scoreCard[5]<<"\n7) 3-of-a-kind: "<<scoreCard[6]<<"\n8) 4-of-a-kind: "<<scoreCard[7]<<"\n9) full house: "<<scoreCard[8]<<"\n10) small straight: "<<scoreCard[9]<<"\n11) large straight: "<<scoreCard[10]<<"\n12) extra: "<<scoreCard[11]<<"\n13) YAHTZEE: "<<scoreCard[12]<<"\n";
-        cout<<"\n\nChoose where to apply your points: ";
-        cin>>answer;
+        if(held == 0 && roll == 3) {
+            scoreCard[scoreCardSlot] = 0;
+            success = true;
+        }else {
+            map<int, int> upper;
+            for (auto const &f : heldDice) {
+                upper[f]++;
+            }
+
+            for (auto const &b : upper) {
+                if (b.first == diceNum) {
+                    scoreCard[scoreCardSlot] = b.first * b.second;
+                    success = true;
+                }
+            }
+        }
+    }else{
+        cout<<"you smell - debug\n";
     }
 
-    cout<<"Count points: ";
-    cin>>points;
-    scoreCard[answer-1] = points;
+    if(!success){
+        cout<<"\nYou entered an invalid dice number. You do not have those in your held die.\n";
+    }
+
+    return success;
+
+}
+
+void score(){
+    bool success = false;
+    while(!success) {
+        int answer;
+        cout<<"Held Dice: ";
+        for(int i = 0; i < held; i++){
+            cout<<heldDice[i]<<" ";
+        }
+        cout<<"\n";
+
+        cout << "\n1) 1s: " << scoreCard[0] << "\n2) 2s: " << scoreCard[1] << "\n3) 3s: " << scoreCard[2] << "\n4) 4s: "
+             << scoreCard[3] << "\n5) 5s: " << scoreCard[4] << "\n6) 6s: " << scoreCard[5] << "\n7) 3-of-a-kind: "
+             << scoreCard[6] << "\n8) 4-of-a-kind: " << scoreCard[7] << "\n9) full house: " << scoreCard[8]
+             << "\n10) small straight: " << scoreCard[9] << "\n11) large straight: " << scoreCard[10] << "\n12) extra: "
+             << scoreCard[11] << "\n13) YAHTZEE: " << scoreCard[12] << "\n";
+        cout << "\n\nChoose where to apply your points: ";
+        cin >> answer;
+
+        while (scoreCard[answer - 1] != -1) {
+            cout<<"Held Dice: ";
+            for(int i = 0; i < held; i++){
+                cout<<heldDice[i]<<" ";
+            }
+            cout<<"\n";
+
+            cout << "You have already set your score for that slot.";
+            cout << "\n1) 1s: " << scoreCard[0] << "\n2) 2s: " << scoreCard[1] << "\n3) 3s: " << scoreCard[2]
+                 << "\n4) 4s: " << scoreCard[3] << "\n5) 5s: " << scoreCard[4] << "\n6) 6s: " << scoreCard[5]
+                 << "\n7) 3-of-a-kind: " << scoreCard[6] << "\n8) 4-of-a-kind: " << scoreCard[7] << "\n9) full house: "
+                 << scoreCard[8] << "\n10) small straight: " << scoreCard[9] << "\n11) large straight: "
+                 << scoreCard[10] << "\n12) extra: " << scoreCard[11] << "\n13) YAHTZEE: " << scoreCard[12] << "\n";
+            cout << "\n\nChoose where to apply your points: ";
+            cin >> answer;
+        }
+
+        int scorecardSlot = answer - 1;
+        success = calculateScore(scorecardSlot);
+    }
 }
 
 int main() {
@@ -91,30 +149,59 @@ int main() {
     scoreCard[13] = 0;
 
     while(turn < 13) {
-        rollAndHold();
+        while(held<5 || held == 0){
+            if(held == 0){
+                if(roll == 3){
+                    cout<<"You're on your last roll and have not held any. Please choose a slot to put a 0.\n";
+                    score();
+                    break;
+                }else{
+                    rll();
+                    hold();
+                }
+            }else{
+                hold();
+                cout << "Held Dice: ";
+                for (int i = 0; i < held; i++) {
+                    cout << heldDice[i] << " ";
+                }
 
-        if(held<5 && held > 0){
-            cout<<"Held Dice: ";
-            for(int i = 0; i < held; i++){
-                cout<<heldDice[i]<<" ";
-            }
-            cout<<"New Rolled Numbers: ";
-            for (int n = held; n < 5; ++n) {
-                heldDice[n] = dis(gen);
-                cout<<heldDice[n]<<" ";
-            }
-            cout<<"\n";
+                cout << "\n";
+                cout << "New Rolled Numbers: ";
 
-        }else if(held == 5) {
-            score();
-        }else if(held == 0){
-            if(roll == 3){
-                cout<<"You're on your last roll. Either put a 0 somewhere or fill in your points.";
-                score();
+                dice.fill(0);
+                for (int n = 0; n < 5 - held; ++n) {
+                    dice[n] = dis(gen);
+                    cout << dice[n] << " ";
+                }
+                cout << "\n";
+                roll++;
+
+                if(roll == 3){
+                    cout<<"You're on your last roll.\n";
+                    if(roll == 3 && held < 5){
+                        cout<< "Holding the other dice. You don't have anymore rolls.\n";
+                        // TODO. FIX THIS HERE IT ONLY SAVES ONE LESS THAT IT SHOULD WHEN YOU RUN OUT OF ROLLS.
+                        for( int k=0; k<5-held; k++ )
+                        {
+                            if(dice[k] != 0) {
+                                heldDice[held] = dice[k];
+                                held++;
+                            }
+                        }
+                        score();
+                        break;
+                    }
+                }
             }
-            rollAndHold();
         }
+
+        if(held == 5) {
+            score();
+        }
+
         held = 0;
+        roll= 0;
         turn++;
 
     }
