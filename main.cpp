@@ -182,7 +182,7 @@ int main() {
                     if(roll == 3 && held < 5){
                         cout<< "Holding the other dice. You don't have anymore rolls.\n";
                         // TODO. FIX THIS HERE IT ONLY SAVES ONE LESS THAT IT SHOULD WHEN YOU RUN OUT OF ROLLS.
-                        for( int k=0; k<5-held; k++ )
+                        for( int k=0; k<6-held; k++ )
                         {
                             if(dice[k] != 0) {
                                 heldDice[held] = dice[k];
